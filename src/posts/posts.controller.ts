@@ -14,8 +14,8 @@ import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOperation({ summary: 'only logged in user can create a post' })
   create(@Body() dto: CreatePostDto, @Req() req: any) {

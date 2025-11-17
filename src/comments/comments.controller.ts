@@ -19,7 +19,7 @@ export class CommentsController {
     return this.commentsService.create(dto, req.user);
   }
 
-  @Get(':postId')
+  @Get('post/:postId')
   @ApiOperation({ summary: 'Get a post with all comments under it' })
   async getCommentsByPost(@Param('postId', ParseIntPipe) postId: number) {
   return this.commentsService.getCommentsByPost(postId);
