@@ -1,24 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
+import { PostsService } from './posts.service';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { PostEntity } from './posts.entity';
 import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
 
-describe('AuthService', () => {
-  let service: AuthService;
+describe('PostsService', () => {
+  let service: PostsService;
 
+  const mockPostRepo = {};
   const mockUsersService = {};
-  const mockJwtService = {};
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AuthService,
+        PostsService, 
+        { provide: getRepositoryToken(PostEntity), useValue: mockPostRepo }, 
         { provide: UsersService, useValue: mockUsersService },
-        { provide: JwtService, useValue: mockJwtService },
       ],
     }).compile();
 
-    service = module.get<AuthService>(AuthService);
+    service = module.get<PostsService>(PostsService);
   });
 
   it('should be defined', () => {
