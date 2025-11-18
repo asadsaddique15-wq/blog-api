@@ -10,7 +10,9 @@ async function bootstrap() {
     origin: [
       'http://localhost:5173',
       'http://localhost:5174',
-      'https://platform.launchix.ai'
+      'https://platform.launchix.ai',
+      'https://blog-api-slud.vercel.app',
+
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
     credentials: true,
