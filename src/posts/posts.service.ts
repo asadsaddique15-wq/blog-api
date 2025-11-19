@@ -37,13 +37,15 @@ async create(dto: CreatePostDto, user: User) {
     if (missingAuthors > 0) {
       console.warn(`PostsService.findAll: skipped ${missingAuthors} posts with null author`);
     }
-   return posts.map(post => {
-  const liked = user ? post.likes?.some(like => like.user?.id === user.id) : false;
-
+  return postsWithAuthor.map(post => {
+  const likes = post.likes || [];
+  const liked = user ? likes.some(like => like.user?.id === user.id) : false;
+  
   return {
-    author: post.author
-      ? { name: post.author.name, role: post.author.role }
-      : { name: 'Unknown', role: 'N/A' }, // fallback
+    author: { 
+      name: post.author?.name || 'Unknown', 
+      role: post.author?.role || Role.USER 
+    },
     id: post.id,
     title: post.title,
     content: post.content,
