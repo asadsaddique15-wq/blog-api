@@ -32,26 +32,26 @@ async create(dto: CreatePostDto, user: User) {
       relations: ['author', 'likes', 'likes.user'],
       order: { createdAt: 'DESC' },
     });
-    // Defensive: some posts in production may have a NULL author (deleted user).
-    // Filter them out to avoid runtime TypeError when reading `author.name`.
     const postsWithAuthor = posts.filter(p => p.author != null);
     const missingAuthors = posts.length - postsWithAuthor.length;
     if (missingAuthors > 0) {
       console.warn(`PostsService.findAll: skipped ${missingAuthors} posts with null author`);
     }
-    return postsWithAuthor.map(post => {
-      const likes = post.likes || [];
-      const liked = user ? likes.some(like => like.user?.id === user.id) : false;
-      return {
-        author: { name: post.author.name, role: post.author.role },
-        id: post.id,
-        title: post.title,
-        content: post.content,
-        createdAt: post.createdAt,
-        updatedAt: post.updatedAt,
-        status: liked ? 'liked' : '',
-      };
-    });
+   return posts.map(post => {
+  const liked = user ? post.likes?.some(like => like.user?.id === user.id) : false;
+
+  return {
+    author: post.author
+      ? { name: post.author.name, role: post.author.role }
+      : { name: 'Unknown', role: 'N/A' }, // fallback
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+    status: liked ? 'liked' : '',
+  };
+});
   } catch (err) {
     console.error('Error in PostsService.findAll:', err);
     throw new InternalServerErrorException('Unable to fetch posts');
