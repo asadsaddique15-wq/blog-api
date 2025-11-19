@@ -26,15 +26,17 @@ async create(dto: CreatePostDto, user: User) {
     };
   }
 
- async findAll(user: User): Promise<any[]> {
+ async findAll(user?: User): Promise<any[]> {
   const posts = await this.postsRepo.find({
     relations: ['author', 'likes', 'likes.user'],
     order: { createdAt: 'DESC' },
   });
   return posts.map(post => {
-    const liked = post.likes.some(like => like.user.id === user.id);
+    const liked = user
+      ? post.likes.some(like => like.user && like.user.id === user.id)
+      : false;
     return {
-      author: {name: post.author.name,role: post.author.role,},
+      author: post.author? { name: post.author.name, role: post.author.role }: null,
       id: post.id,
       title: post.title,
       content: post.content,
@@ -44,6 +46,7 @@ async create(dto: CreatePostDto, user: User) {
     };
   });
 }
+ 
 
   async getRawPost(id: number): Promise<PostEntity> {
     const post = await this.postsRepo.findOne({ where: { id }, relations: ['author'] });

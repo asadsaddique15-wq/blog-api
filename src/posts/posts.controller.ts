@@ -22,13 +22,12 @@ export class PostsController {
     return this.postsService.create(dto, req.user);
   }
 
- @ApiBearerAuth()
- @UseGuards(JwtAuthGuard)
- @Get()
- @ApiOperation({ summary: 'Get all posts with  status' })
- findAll(@Req() req: any) {
-  return this.postsService.findAll(req.user);
-}
+  @Get()
+  @ApiOperation({ summary: 'Get all posts with  status' })
+  findAll(@Req() req: any) {
+    const user = req.user || null;
+    return this.postsService.findAll(user);
+  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get post by ID (shows like status if logged in)' })
