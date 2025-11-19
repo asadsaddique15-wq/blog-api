@@ -1,5 +1,5 @@
-import {Controller,Get,Post,Patch,Delete,Body,Param,ParseIntPipe,UseGuards,Req,ForbiddenException,} 
-      from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, ParseIntPipe, UseGuards, Req, ForbiddenException, }
+  from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -12,7 +12,14 @@ import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 @ApiTags('posts') // Swagger group
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(private readonly postsService: PostsService) { }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all posts with  status' })
+  findAll(@Req() req: any) {
+    const user = req.user || null;
+    return this.postsService.findAll(user);
+  }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -20,13 +27,6 @@ export class PostsController {
   @ApiOperation({ summary: 'only logged in user can create a post' })
   create(@Body() dto: CreatePostDto, @Req() req: any) {
     return this.postsService.create(dto, req.user);
-  }
-
-  @Get()
-  @ApiOperation({ summary: 'Get all posts with  status' })
-  findAll(@Req() req: any) {
-    const user = req.user || null;
-    return this.postsService.findAll(user);
   }
 
   @Get(':id')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PostEntity } from './posts.entity';
@@ -27,24 +27,28 @@ async create(dto: CreatePostDto, user: User) {
   }
 
  async findAll(user?: User): Promise<any[]> {
-  const posts = await this.postsRepo.find({
-    relations: ['author', 'likes', 'likes.user'],
-    order: { createdAt: 'DESC' },
-  });
-  return posts.map(post => {
-    const liked = user
-      ? post.likes.some(like => like.user && like.user.id === user.id)
-      : false;
-    return {
-      author: post.author? { name: post.author.name, role: post.author.role }: null,
-      id: post.id,
-      title: post.title,
-      content: post.content,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      status: liked ? 'liked' : '',
-    };
-  });
+  try {
+    const posts = await this.postsRepo.find({
+      relations: ['author', 'likes', 'likes.user'],
+      order: { createdAt: 'DESC' },
+    });
+    return posts.map(post => {
+      const likes = post.likes || [];
+      const liked = user ? likes.some(like => like.user?.id === user.id) : false;
+      return {
+        author: post.author ? { name: post.author.name, role: post.author.role } : { name: 'Unknown', role: Role.USER },
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
+        status: liked ? 'liked' : '',
+      };
+    });
+  } catch (err) {
+    console.error('Error in PostsService.findAll:', err);
+    throw new InternalServerErrorException('Unable to fetch posts');
+  }
 }
  
 
@@ -55,12 +59,21 @@ async create(dto: CreatePostDto, user: User) {
   }
 
 async findOne(id: number, user?: User): Promise<any> {
-  const post = await this.postsRepo.findOne({where: { id },relations: ['author', 'likes', 'likes.user'],});
-  if (!post) throw new NotFoundException('Post not found');
-  const liked = user ? post.likes.some(like => like.user.id === user.id) : false;
-  return {author: {name: post.author.name,role: post.author.role,},
-   post: {id: post.id,title: post.title,content: post.content,createdAt: post.createdAt, updatedAt: post.updatedAt, status: liked ? 'liked' : '',}};
+  try {
+    const post = await this.postsRepo.findOne({ where: { id }, relations: ['author', 'likes', 'likes.user'] });
+    if (!post) throw new NotFoundException('Post not found');
+    const likes = post.likes || [];
+    const liked = user ? likes.some(like => like.user?.id === user.id) : false;
+    return {
+      author: { name: post.author?.name || 'Unknown', role: post.author?.role || Role.USER },
+      post: { id: post.id, title: post.title, content: post.content, createdAt: post.createdAt, updatedAt: post.updatedAt, status: liked ? 'liked' : '' },
+    };
+  } catch (err) {
+    console.error(`Error in PostsService.findOne (id=${id}):`, err);
+    if (err instanceof NotFoundException) throw err;
+    throw new InternalServerErrorException('Unable to fetch post');
   }
+}
 
   async update(id: number, dto: UpdatePostDto, currentUser: User): Promise<PostEntity> {
     const post = await this.getRawPost(id);
