@@ -33,44 +33,19 @@ export class PostsService {
     };
   }
 
-async findAll(user?: User): Promise<any[]> {
+async findAll(): Promise<any[]> {
   try {
-    const posts = (await this.postsRepo.find({
-      relations: ['author', 'likes', 'likes.user'],
+    const posts = await this.postsRepo.find({
       order: { createdAt: 'DESC' },
-    })) || [];
+    });
 
-    return posts
-      .filter((p) => p && p.author) // must exist + must have author
-      .map((post) => {
-        const author = post.author || {};
-        const likes = Array.isArray(post.likes) ? post.likes : [];
-
-        // Safe like check
-        const liked = user
-          ? likes.some((like) => like?.user?.id === user.id)
-          : false;
-
-        return {
-          author: {
-            name: typeof author.name === 'string' && author.name.trim()
-              ? author.name
-              : 'Unknown',
-            role: author.role || Role.USER,
-          },
-          id: post.id ?? null,
-          title: post.title ?? '',
-          content: post.content ?? '',
-          createdAt: post.createdAt ?? null,
-          updatedAt: post.updatedAt ?? null,
-          status: liked ? 'liked' : '',
-        };
-      });
+    return posts || [];
   } catch (err) {
     console.error('Error in PostsService.findAll:', err);
     throw new InternalServerErrorException('Unable to fetch posts');
   }
 }
+
 
 
   async getRawPost(id: number): Promise<PostEntity> {

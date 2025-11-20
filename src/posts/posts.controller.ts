@@ -19,7 +19,7 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   findAll(@Req() req: any) {
     const user = req.user || null;
-    return this.postsService.findAll(user);
+    return this.postsService.findAll();
   }
 
   @ApiBearerAuth()
