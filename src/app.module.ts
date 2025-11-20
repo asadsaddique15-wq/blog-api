@@ -18,7 +18,7 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.DB_PASSWORD || 's3tc#CYD',
       database: process.env.DB_NAME || 'blogdb',
       autoLoadEntities: true,
-      synchronize: true, //dev only
+      synchronize: false, //dev only
     }),
     UsersModule,
     PostsModule,
